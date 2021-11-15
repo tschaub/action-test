@@ -100,9 +100,7 @@ jobs:
               issue_number: issueNumber,
             });
 
-            console.log('comments', comments);
-
-            const commentExists = comments.some((comment) => {
+            const commentExists = comments.data.some((comment) => {
               console.log('comment', comment);
               return comment.user.login === author && comment.body.startsWith(start);
             });
