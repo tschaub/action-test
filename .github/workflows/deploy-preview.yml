@@ -2,7 +2,7 @@ name: Deploy Preview
 
 on:
   workflow_run:
-    workflows: ["Build Preview"]
+    workflows: ["Build Preview", "Test"]
     types:
       - completed
 
@@ -16,7 +16,7 @@ jobs:
           node-version: '16'
       - run: npm install --global netlify-cli@6
       - run: npm install unzipper@0.10 request@2.88.2
-      - uses: actions/github-script@v3.1.0
+      - uses: actions/github-script@v5
         with:
           script: |
             const unzipper = nativeRequire('unzipper');
@@ -40,3 +40,19 @@ jobs:
             const number = parseInt(content.toString(), 10);
 
             console.log('pr number', number);
+
+  test-script:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+      - run: npm install --global netlify-cli@6
+      - run: npm install unzipper@0.10 request@2.88.2
+      - uses: actions/github-script@v5
+        with:
+          script: |
+            const unzipper = nativeRequire('unzipper');
+            const request = nativeRequire('request');
+
+            console.log('it worked', unzipper, request);
