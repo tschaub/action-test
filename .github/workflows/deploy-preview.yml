@@ -22,6 +22,8 @@ jobs:
         with:
           result-encoding: string
           script: |
+            const unzipper = require('unzipper');
+
             const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
               owner: context.repo.owner,
               repo: context.repo.repo,
