@@ -2,14 +2,14 @@ name: Deploy Preview
 
 on:
   workflow_run:
-    workflows: ["Build Preview", "Test"]
+    workflows: ["Build Preview"]
     types:
       - completed
 
 jobs:
   deploy-preview:
     runs-on: ubuntu-latest
-    # if: ${{github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'}}
+    if: ${{github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'}}
     steps:
       - uses: actions/setup-node@v2
         with:
