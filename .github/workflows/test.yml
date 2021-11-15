@@ -37,7 +37,7 @@ jobs:
       - name: Save pull request number
         run: |
           mkdir -p build/pr
-          echo '42' > build/pr/number
+          echo '1' > build/pr/number
       - uses: actions/upload-artifact@v2
         with:
           name: pr
