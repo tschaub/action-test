@@ -122,7 +122,7 @@ jobs:
             const issueNumber = 1;
 
             const start = ':package:';
-            const author = 'github-actions';
+            const author = 'github-actions[bot]';
 
             const comments = await github.rest.issues.listComments({
               owner: context.repo.owner,
