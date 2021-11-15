@@ -89,17 +89,18 @@ jobs:
             const file = directory.files.find(d => d.path === 'number');
             const content = await file.buffer();
             const number = parseInt(content.toString(), 10);
+            const issueNumber = 1;
 
             const start = ':package:';
             const author = 'github-actions';
-
-            const issueNumber = 1;
 
             const comments = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: issueNumber,
             });
+
+            console.log('comments', comments);
 
             const commentExists = comments.some((comment) => {
               console.log('comment', comment);
