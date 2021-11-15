@@ -70,9 +70,9 @@ jobs:
 
             if (!commentExists) {
               const body = [
-                `${start} Preview the [examples](https://example.com/${number}/examples/) and`,
-                `[docs](https://example.com/${number}/apidoc/) from this branch`,
-                `here: https://example.com/${number}.`
+                `${start} Preview the [examples](https://example.com/${pullRequestNumber}/examples/) and`,
+                `[docs](https://example.com/${pullRequestNumber}/apidoc/) from this branch`,
+                `here: https://example.com/${pullRequestNumber}.`
               ].join(' ');
 
               await github.rest.issues.createComment({
@@ -82,5 +82,5 @@ jobs:
                 body: body
               });
             } else {
-              console.log('comment already exists');
+              console.log(`Preview URL comment already added to PR #${number}`);
             }
