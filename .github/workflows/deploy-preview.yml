@@ -47,8 +47,8 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '16'
-      - name: Install dependencies
-        run: npm install --global netlify-cli@6 unzipper@0.10
+      - run: npm install --global netlify-cli@6
+      - run: npm install unzipper@0.10
       - name: Get pull request number
         uses: actions/github-script@v5
         with:
