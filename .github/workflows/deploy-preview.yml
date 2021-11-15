@@ -131,7 +131,9 @@ jobs:
             });
 
             const commentExists = comments.data.some((comment) => {
-              console.log('comment', comment);
+              console.log('user.login', comment.user.login);
+              console.log('body', comment.body);
+              console.log('match', comment.user.login === author && comment.body.startsWith(start));
               return comment.user.login === author && comment.body.startsWith(start);
             });
 
