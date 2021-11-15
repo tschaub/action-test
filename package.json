@@ -1,0 +1,33 @@
+{
+  "name": "action-test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "eslint tasks",
+    "build-site": "mkdir -p build && echo 'it works' > build/site"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tschaub/action-test.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tschaub/action-test/issues"
+  },
+  "homepage": "https://github.com/tschaub/action-test#readme",
+  "devDependencies": {
+    "eslint": "^8.2.0",
+    "eslint-config-tschaub": "^13.1.0"
+  },
+  "eslintConfig": {
+    "extends": "tschaub",
+    "overrides": [{
+      "files": [
+        "tasks/**/*.cjs"
+      ]
+    }]
+  }
+}

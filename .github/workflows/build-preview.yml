@@ -1,0 +1,28 @@
+name: Build Preview
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+      - run: npm ci
+      - run: npm run build-site
+      - uses: actions/upload-artifact@v2
+        with:
+          name: site
+          path: build/site
+      - run: |
+          mkdir -p build/pr
+          echo ${{github.event.number}} > .build/pr/number
+      - uses: actions/upload-artifact@v2
+        with:
+          name: pr
+          path: build/pr

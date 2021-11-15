@@ -1,0 +1,42 @@
+name: Deploy Preview
+
+on:
+  workflow_run:
+    workflows: ["Build Preview"]
+    types:
+      - completed
+
+jobs:
+  deploy-preview:
+    runs-on: ubuntu-latest
+    if: ${{github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'}}
+    steps:
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+      - run: npm install --global netlify-cli@6
+      - run: npm install unzipper@0.10 request@2.88.2
+      - uses: actions/github-script@v3.1.0
+        with:
+          script: |
+            const unzipper = require('unzipper');
+            const request = require('request');
+
+            const artifacts = github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: ${{github.event.workflow_run.id}},
+            });
+
+            console.log('artifacts', artifacts);
+
+            const artifact = artifacts.data.artifacts.filter((artifact) => {
+              return artifact.name == 'pr';
+            })[0];
+
+            const directory = await unzipper.Open.url(request, artifact['archive_download_url']);
+            const file = directory.files.find(d => d.path === 'number');
+            const content = await file.buffer();
+            const number = parseInt(content.toString(), 10);
+
+            console.log('pr number', number);
