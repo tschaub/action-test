@@ -55,4 +55,21 @@ jobs:
             const unzipper = require('unzipper');
             const request = require('request');
 
-            console.log('it worked', unzipper, request);
+            const artifacts = github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: ${{github.event.workflow_run.id}},
+            });
+
+            console.log('artifacts', artifacts);
+
+            const artifact = artifacts.data.artifacts.filter((artifact) => {
+              return artifact.name == 'pr';
+            })[0];
+
+            const directory = await unzipper.Open.url(request, artifact['archive_download_url']);
+            const file = directory.files.find(d => d.path === 'number');
+            const content = await file.buffer();
+            const number = parseInt(content.toString(), 10);
+
+            console.log('pr number', number);
