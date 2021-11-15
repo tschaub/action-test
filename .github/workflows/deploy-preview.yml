@@ -9,7 +9,7 @@ on:
 jobs:
   deploy-preview:
     runs-on: ubuntu-latest
-    if: ${{github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'}}
+    # if: ${{github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'}}
     steps:
       - uses: actions/setup-node@v2
         with:
@@ -18,14 +18,15 @@ jobs:
       - run: npm install unzipper@0.10
       - name: Get pull request number
         uses: actions/github-script@v5
+          run_id: ${{github.event.workflow_run.id}}
+        id: pull-request-number
         with:
+          result-encoding: string
           script: |
-            const unzipper = require('unzipper');
-
             const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              run_id: ${{github.event.workflow_run.id}},
+              run_id: ${{github.event.workflow_run.id}}
             });
 
             const artifact = artifacts.data.artifacts.filter(
@@ -40,86 +41,19 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               artifact_id: artifact.id,
-              archive_format: 'zip',
+              archive_format: 'zip'
             });
 
             const directory = await unzipper.Open.buffer(Buffer.from(download.data));
             const file = directory.files.find(d => d.path === 'number');
             const content = await file.buffer();
-            const number = parseInt(content.toString(), 10);
-            const issueNumber = 1;
-
-            const start = ':package:';
-            const author = 'github-actions';
-
-            const comments = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issueNumber,
-            });
-
-            const commentExists = comments.data.some((comment) => {
-              console.log('comment', comment);
-              return comment.user.login === author && comment.body.startsWith(start);
-            });
-
-            if (!commentExists) {
-              const body = [
-                `${start} Preview the [examples](https://example.com/${number}/examples/) and`,
-                `[docs](https://example.com/${number}/apidoc/) from this branch`,
-                `here: https://example.com/${number}.`
-              ].join(' ');
-
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issueNumber,
-                body: body,
-              });
-            } else {
-              console.log('comment already exists');
-            }
-
-  test-script:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-      - run: npm install --global netlify-cli@6
-      - run: npm install unzipper@0.10
-      - name: Get pull request number
+            return content.toString();
+      - name: Deploy
         uses: actions/github-script@v5
+          run_id: ${{github.event.workflow_run.id}}
         with:
           script: |
-            const unzipper = require('unzipper');
-
-            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              run_id: ${{github.event.workflow_run.id}},
-            });
-
-            const artifact = artifacts.data.artifacts.filter(
-              artifact => artifact.name === 'pr'
-            )[0];
-
-            if (!artifact) {
-              throw new Error('No pr artifact found');
-            }
-
-            const download = await github.rest.actions.downloadArtifact({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              artifact_id: artifact.id,
-              archive_format: 'zip',
-            });
-
-            const directory = await unzipper.Open.buffer(Buffer.from(download.data));
-            const file = directory.files.find(d => d.path === 'number');
-            const content = await file.buffer();
-            const number = parseInt(content.toString(), 10);
-            const issueNumber = 1;
+            const pullRequestNumber = parseInt(${{steps.pull-request-number.outputs.result}}, 10);
 
             const start = ':package:';
             const author = 'github-actions[bot]';
@@ -127,15 +61,12 @@ jobs:
             const comments = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: issueNumber,
+              issue_number: pullRequestNumber
             });
 
-            const commentExists = comments.data.some((comment) => {
-              console.log('user.login', comment.user.login);
-              console.log('body', comment.body);
-              console.log('match', comment.user.login === author && comment.body.startsWith(start));
-              return comment.user.login === author && comment.body.startsWith(start);
-            });
+            const commentExists = comments.data.some(
+              comment => comment.user.login === author && comment.body.startsWith(start)
+            );
 
             if (!commentExists) {
               const body = [
@@ -147,8 +78,8 @@ jobs:
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                issue_number: issueNumber,
-                body: body,
+                issue_number: pullRequestNumber,
+                body: body
               });
             } else {
               console.log('comment already exists');
