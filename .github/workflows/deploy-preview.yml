@@ -18,7 +18,6 @@ jobs:
       - run: npm install unzipper@0.10
       - name: Get pull request number
         uses: actions/github-script@v5
-          run_id: ${{github.event.workflow_run.id}}
         id: pull-request-number
         with:
           result-encoding: string
@@ -50,7 +49,6 @@ jobs:
             return content.toString();
       - name: Deploy
         uses: actions/github-script@v5
-          run_id: ${{github.event.workflow_run.id}}
         with:
           script: |
             const pullRequestNumber = parseInt(${{steps.pull-request-number.outputs.result}}, 10);
