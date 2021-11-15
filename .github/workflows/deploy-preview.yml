@@ -49,7 +49,8 @@ jobs:
           node-version: '16'
       - run: npm install --global netlify-cli@6
       - run: npm install unzipper@0.10 request@2.88.2
-      - uses: actions/github-script@v5
+      - name: Get pull request number
+        uses: actions/github-script@v5
         with:
           script: |
             const unzipper = require('unzipper');
@@ -61,11 +62,16 @@ jobs:
               run_id: ${{github.event.workflow_run.id}},
             });
 
-            console.log('artifacts', artifacts);
-
             const artifact = artifacts.data.artifacts.filter((artifact) => {
+              console.log('artifact', artifact);
               return artifact.name == 'pr';
             })[0];
+
+            if (!artifact) {
+              throw new Error('No pr artifact found');
+            }
+
+            console.log('chose', artifact['archive_download_url'])
 
             const directory = await unzipper.Open.url(request, artifact['archive_download_url']);
             const file = directory.files.find(d => d.path === 'number');
