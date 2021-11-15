@@ -21,7 +21,7 @@ jobs:
           path: build/site
       - run: |
           mkdir -p build/pr
-          echo ${{github.event.number}} > .build/pr/number
+          echo ${{github.event.number}} > build/pr/number
       - uses: actions/upload-artifact@v2
         with:
           name: pr

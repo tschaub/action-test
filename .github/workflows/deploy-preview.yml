@@ -19,8 +19,8 @@ jobs:
       - uses: actions/github-script@v3.1.0
         with:
           script: |
-            const unzipper = require('unzipper');
-            const request = require('request');
+            const unzipper = nativeRequire('unzipper');
+            const request = nativeRequire('request');
 
             const artifacts = github.rest.actions.listWorkflowRunArtifacts({
               owner: context.repo.owner,
