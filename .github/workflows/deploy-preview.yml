@@ -55,7 +55,7 @@ jobs:
             const unzipper = require('unzipper');
             const request = require('request');
 
-            const artifacts = github.rest.actions.listWorkflowRunArtifacts({
+            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
               owner: context.repo.owner,
               repo: context.repo.repo,
               run_id: ${{github.event.workflow_run.id}},
