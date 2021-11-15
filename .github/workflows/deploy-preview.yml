@@ -15,26 +15,35 @@ jobs:
         with:
           node-version: '16'
       - run: npm install --global netlify-cli@6
-      - run: npm install unzipper@0.10 request@2.88.2
-      - uses: actions/github-script@v5
+      - run: npm install unzipper@0.10
+      - name: Get pull request number
+        uses: actions/github-script@v5
         with:
           script: |
             const unzipper = require('unzipper');
-            const request = require('request');
 
-            const artifacts = github.rest.actions.listWorkflowRunArtifacts({
+            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
               owner: context.repo.owner,
               repo: context.repo.repo,
               run_id: ${{github.event.workflow_run.id}},
             });
 
-            console.log('artifacts', artifacts);
+            const artifact = artifacts.data.artifacts.filter(
+              artifact => artifact.name === 'pr'
+            )[0];
 
-            const artifact = artifacts.data.artifacts.filter((artifact) => {
-              return artifact.name == 'pr';
-            })[0];
+            if (!artifact) {
+              throw new Error('No pr artifact found');
+            }
 
-            const directory = await unzipper.Open.url(request, artifact['archive_download_url']);
+            const download = await github.rest.actions.downloadArtifact({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              artifact_id: artifact.id,
+              archive_format: 'zip',
+            });
+
+            const directory = await unzipper.Open.buffer(Buffer.from(download.data));
             const file = directory.files.find(d => d.path === 'number');
             const content = await file.buffer();
             const number = parseInt(content.toString(), 10);
@@ -61,9 +70,9 @@ jobs:
               run_id: ${{github.event.workflow_run.id}},
             });
 
-            const artifact = artifacts.data.artifacts.filter((artifact) => {
-              return artifact.name == 'pr';
-            })[0];
+            const artifact = artifacts.data.artifacts.filter(
+              artifact => artifact.name === 'pr'
+            )[0];
 
             if (!artifact) {
               throw new Error('No pr artifact found');
@@ -81,4 +90,15 @@ jobs:
             const content = await file.buffer();
             const number = parseInt(content.toString(), 10);
 
-            console.log('pr number', number);
+            const comment = `
+              Preview the [examples](https://example.com/${number}/examples/) and
+              [docs](https://example.com/${number}/apidoc/) from this branch
+              here: https://example.com/${number}.
+            `;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 1,
+              body: comment,
+            });
